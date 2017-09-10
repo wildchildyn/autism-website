@@ -2,10 +2,11 @@ from flask import Flask, render_template, request
 from werkzeug.exceptions import BadRequest
 from flask_sqlalchemy import SQLAlchemy
 import datetime
-
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='postgresql://localhost/learningflask'
+#app.config['SQLALCHEMY_DATABASE_URI']='postgresql://localhost/learningflask'
+app.config['SQLALCHEMY_DATABASE_URI']=os.environ['DATABASE_URL']
 app.debug = True
 db = SQLAlchemy(app)
 
