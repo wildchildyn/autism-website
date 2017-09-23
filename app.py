@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from werkzeug.exceptions import BadRequest
 from flask_sqlalchemy import SQLAlchemy
+from flask.ext.cache import Cache
 import datetime
 import os
 
@@ -9,6 +10,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']=os.environ['DATABASE_URL']
 app.debug = True
 db = SQLAlchemy(app)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 class Blog(db.Model):
     __tablename__='blogs'
@@ -54,12 +56,14 @@ class Myblogcontent(db.Model):
 #     return render_template("index.html")
 
 @app.route('/')
+@cache.cached(timeout=315360000)
 def home():
     myblog_data=Myblog.query.order_by(Myblog.mbid.desc()).limit(3)
     expertblog_data=Expertblog.query.all()
     return render_template('home.html', myblog_data=myblog_data,expertblog_data=expertblog_data)
 
 @app.route('/content')
+@cache.cached(timeout=315360000)
 def content():
     bid=request.args.get('bid')
     btype=request.args.get('type')
@@ -99,4 +103,3 @@ def about1():
 
 if __name__ == '__main__':
     app.run()
-
