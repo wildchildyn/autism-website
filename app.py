@@ -49,21 +49,19 @@ class Myblogcontent(db.Model):
     articleid=db.Column(db.Integer)
     content=db.Column(db.String(100000))
 
-    
-
 # @app.route('/')
 # def index():
 #     return render_template("index.html")
 
 @app.route('/')
-@cache.cached(timeout=315360000)
+@cache.cached(timeout=10)
 def home():
     myblog_data=Myblog.query.order_by(Myblog.mbid.desc()).limit(3)
     expertblog_data=Expertblog.query.all()
     return render_template('home.html', myblog_data=myblog_data,expertblog_data=expertblog_data)
 
 @app.route('/content')
-@cache.cached(timeout=315360000)
+@cache.cached(timeout=10)
 def content():
     bid=request.args.get('bid')
     btype=request.args.get('type')
