@@ -5,9 +5,12 @@ from flask.ext.cache import Cache
 import datetime
 import os
 
+# https://wildchildyn@childrenasd.scm.azurewebsites.net/childrenasd.git   (azure git)
+
 app = Flask(__name__)
 #app.config['SQLALCHEMY_DATABASE_URI']='postgresql://localhost/learningflask'
-app.config['SQLALCHEMY_DATABASE_URI']=os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI']='postgresql://wildchildyn@childrenasd:abcd1234!@childrenasd.postgres.database.azure.com:5432/postgres'
+#app.config['SQLALCHEMY_DATABASE_URI']=os.environ['DATABASE_URL']
 app.debug = True
 db = SQLAlchemy(app)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
