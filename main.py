@@ -1,57 +1,46 @@
 from flask import Flask, render_template, request
 from werkzeug.exceptions import BadRequest
-from flask_sqlalchemy import SQLAlchemy
 from flask.ext.cache import Cache
 import datetime
 import os
+import mysql.connector
 
 # https://wildchildyn@childrenasd.scm.azurewebsites.net/childrenasd.git   (azure git)
 
 app = Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URI']='postgresql://localhost/learningflask'
-app.config['SQLALCHEMY_DATABASE_URI']='postgresql://wildchildyn@childrenasd:abcd1234!@childrenasd.postgres.database.azure.com:5432/postgres'
-#app.config['SQLALCHEMY_DATABASE_URI']=os.environ['DATABASE_URL']
 app.debug = True
-db = SQLAlchemy(app)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
-class Blog(db.Model):
-    __tablename__='blogs'
-    bid=db.Column(db.Integer, primary_key=True)
-    title=db.Column(db.String(200))
-    author = db.Column(db.String(100))
-    date= db.Column(db.TIMESTAMP, default=datetime.datetime.utcnow)
-    content=db.Column(db.String(200000))
+db = mysql.connector.connect(host='childrenasd.mysql.database.azure.com',database='childrenasd',user='wildchildyn@childrenasd',password='abcd1234!')
 
-class Myblog(db.Model):
-    __tablename__='myblogoverview'
-    mbid=db.Column(db.Integer,primary_key=True)
-    title=db.Column(db.String(200))
-    author=db.Column(db.String(200))
-    overview=db.Column(db.String(10000))
-    coverimage=db.Column(db.String(1000))
-    date=db.Column(db.TIMESTAMP,default=datetime.datetime.utcnow)
+class Myblog:
+    def __init__(self, mbid, title, author, overview, coverimage):
+        self.mbid = mbid
+        self.title = title
+        self.author = author
+        self.overview = overview
+        self.coverimage = coverimage
 
-class Expertblog(db.Model):
-    __tablename__='expertblogoverview'
-    ebid=db.Column(db.Integer,primary_key=True)
-    topic=db.Column(db.String(200))
-    subtitle=db.Column(db.String(500))
-    coverimage=db.Column(db.String(500))
-    author=db.Column(db.String(1000))
+class Expertblog:
+    def __init__(self, ebid, topic, subtitle, coverimage, author):
+        self.ebid = ebid
+        self.topic = topic
+        self.subtitle = subtitle
+        self.coverimage = coverimage
+        self.author = author
 
-class Eblogcontent(db.Model):
-    __tablename__='eblogcontent'
-    cid=db.Column(db.Integer,primary_key=True)
-    articleid=db.Column(db.Integer)
-    content=db.Column(db.String(100000))
+class Eblogcontent:
+    def __init__(self, cid, articleid, content):
+        self.cid = cid
+        self.articleid = articleid
+        self.content = content
 
-class Myblogcontent(db.Model):
-    __tablename__='mblogcontent'
-    cid=db.Column(db.Integer,primary_key=True)
-    articleid=db.Column(db.Integer)
-    content=db.Column(db.String(100000))
-
+class Myblogcontent:
+    def __init__(self, cid, articleid, content):
+        self.cid = cid
+        self.articleid = articleid
+        self.content = content
+    
 # @app.route('/')
 # def index():
 #     return render_template("index.html")
@@ -59,8 +48,14 @@ class Myblogcontent(db.Model):
 @app.route('/')
 @cache.cached(timeout=10)
 def home():
-    myblog_data=Myblog.query.order_by(Myblog.mbid.desc()).limit(10)
-    expertblog_data=Expertblog.query.all()
+    cur = db.cursor()
+    cur.execute("SELECT ebid,topic,subtitle,coverimage,author from expertblogoverview;")
+    expertblog_data = []
+    for row in cur.fetchall():
+        expertblog_data.append(Expertblog(row[0], row[1], row[2], row[3], row[4]))
+
+    myblog_data = []
+    #myblog_data=Myblog.query.order_by(Myblog.mbid.desc()).limit(10)
     return render_template('home.html', myblog_data=myblog_data,expertblog_data=expertblog_data)
 
 @app.route('/content')
